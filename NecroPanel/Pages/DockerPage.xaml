@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="NecroPanel.Pages.DockerPage"
+    Title="Docker Management"
+    BackgroundColor="#101014">
+
+    <Grid
+        RowDefinitions="Auto,*"
+        Padding="12">
+
+        <!-- HEADER -->
+        <Grid
+            Grid.Row="0"
+            ColumnDefinitions="*,Auto"
+            Margin="0,0,0,12">
+
+            <Label
+                Text="Docker Containers"
+                FontSize="24"
+                FontAttributes="Bold"
+                VerticalOptions="Center"
+                TextColor="White"/>
+
+            <ImageButton
+                Grid.Column="1"
+                Source="refresh.png"
+                WidthRequest="42"
+                HeightRequest="42"
+                BackgroundColor="#1E1E24"
+                CornerRadius="12"
+                Padding="8"
+                Clicked="RefreshClicked"/>
+        </Grid>
+
+        <!-- LISTA -->
+        <CollectionView
+            Grid.Row="1"
+            ItemsSource="{Binding Containers}">
+
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout
+                    Orientation="Vertical"
+                    ItemSpacing="10"/>
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+
+                <DataTemplate>
+
+                    <Border
+                        StrokeThickness="0"
+                        BackgroundColor="#1A1A22"
+                        Padding="12">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="18"/>
+                        </Border.StrokeShape>
+
+                        <Grid
+                            ColumnDefinitions="26,*,Auto"
+                            ColumnSpacing="12">
+
+                            <!-- FAROL -->
+                            <Border
+                                WidthRequest="18"
+                                HeightRequest="18"
+                                VerticalOptions="Center"
+                                HorizontalOptions="Center"
+                                StrokeThickness="0">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="99"/>
+                                </Border.StrokeShape>
+
+                                <Border.Triggers>
+
+                                    <!-- ONLINE -->
+                                    <DataTrigger
+                                        TargetType="Border"
+                                        Binding="{Binding Online}"
+                                        Value="True">
+
+                                        <Setter
+                                            Property="BackgroundColor"
+                                            Value="#3DDB6C"/>
+                                    </DataTrigger>
+
+                                    <!-- OFFLINE -->
+                                    <DataTrigger
+                                        TargetType="Border"
+                                        Binding="{Binding Online}"
+                                        Value="False">
+
+                                        <Setter
+                                            Property="BackgroundColor"
+                                            Value="#E53935"/>
+                                    </DataTrigger>
+
+                                </Border.Triggers>
+
+                            </Border>
+
+                            <!-- INFO -->
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="2">
+
+                                <Label
+                                    Text="{Binding Nome}"
+                                    FontSize="17"
+                                    FontAttributes="Bold"
+                                    TextColor="White"
+                                    LineBreakMode="TailTruncation"/>
+
+                                <Label
+                                    Text="{Binding Ports}"
+                                    FontSize="13"
+                                    TextColor="#A0A0AA"
+                                    LineBreakMode="TailTruncation"/>
+                            </VerticalStackLayout>
+
+                            <!-- AÇÕES -->
+                            <HorizontalStackLayout
+                                Grid.Column="2"
+                                Spacing="8"
+                                VerticalOptions="Center">
+
+                                <!-- PLAY -->
+                                <ImageButton
+                                    IsVisible="{Binding Offline}"
+                                    Source="play.png"
+                                    WidthRequest="38"
+                                    HeightRequest="38"
+                                    Padding="7"
+                                    BackgroundColor="#1E1E24"
+                                    CornerRadius="12"
+                                    Clicked="StartContainerClicked"/>
+
+                                <!-- STOP -->
+                                <ImageButton
+                                    IsVisible="{Binding Online}"
+                                    Source="pause.png"
+                                    WidthRequest="38"
+                                    HeightRequest="38"
+                                    Padding="7"
+                                    BackgroundColor="#1E1E24"
+                                    CornerRadius="12"
+                                    Clicked="StopContainerClicked"/>
+
+                                <!-- DELETE -->
+                                <ImageButton
+                                    Source="delete.png"
+                                    WidthRequest="38"
+                                    HeightRequest="38"
+                                    Padding="7"
+                                    BackgroundColor="#1E1E24"
+                                    CornerRadius="12"
+                                    Clicked="DeleteContainerClicked"/>
+
+                            </HorizontalStackLayout>
+
+                        </Grid>
+
+                    </Border>
+
+                </DataTemplate>
+
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

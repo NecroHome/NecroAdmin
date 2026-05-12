@@ -1,0 +1,177 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NecroPanel.Pages.FileExplorerPage"
+             BackgroundColor="#111827"
+             x:Name="FileExplorerPageRef"
+             xmlns:model="clr-namespace:NecroPanel.ApplicationN.Models;assembly=NecroPanel.ApplicationN"
+            Title="{Binding Titulo}">
+
+    <Grid RowDefinitions="*, Auto">
+        <CollectionView
+            Grid.Row="0"
+            Margin="16,0,16,16"
+            ItemsSource="{Binding Arquivos}">
+
+            <CollectionView.ItemTemplate>
+
+                <DataTemplate x:DataType="model:ArquivoItemModel">
+
+                    <Grid>
+                        <Border
+                        Margin="0,0,0,10"
+                        Padding="12"
+                        BackgroundColor="#1F2937"
+                        StrokeThickness="0">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20"/>
+                            </Border.StrokeShape>
+
+                            <Grid
+                            ColumnDefinitions="Auto,*,Auto"
+                            ColumnSpacing="12">
+
+                                <Image
+                                Grid.Column="0"
+                                WidthRequest="32"
+                                HeightRequest="32"
+                                Source="{Binding Icone}"
+                                VerticalOptions="Center"/>
+
+                                <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="2"
+                                VerticalOptions="Center">
+
+                                    <Label
+                                    FontAttributes="Bold"
+                                    FontSize="15"
+                                    Text="{Binding Nome}"
+                                    TextColor="White"/>
+                                </VerticalStackLayout>
+
+                                <Grid.GestureRecognizers>
+
+                                    <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AbrirItemCommand}"
+                                    CommandParameter="{Binding .}"/>
+
+                                </Grid.GestureRecognizers>
+
+                            </Grid>
+
+                        </Border>
+                    </Grid>
+
+                </DataTemplate>
+
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <Border
+            Grid.Row="1"
+            Margin="16,16,16,8"
+            Padding="14"
+            BackgroundColor="#1F2937"
+            StrokeThickness="0">
+
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="18"/>
+            </Border.StrokeShape>
+
+            <Grid
+        ColumnDefinitions="*, Auto"
+        ColumnSpacing="12">
+
+                <HorizontalStackLayout
+            Grid.Column="0"
+            Spacing="8"
+            VerticalOptions="Center">
+
+                    <ImageButton
+                WidthRequest="38"
+                HeightRequest="38"
+                Padding="8"
+                Clicked="GitPullClicked"
+                IsVisible="{Binding DiretorioAtualEhGit}"
+                Source="git.png">
+
+                        <ImageButton.CornerRadius>
+                            12
+                        </ImageButton.CornerRadius>
+
+                    </ImageButton>
+
+                    <ImageButton
+                WidthRequest="38"
+                HeightRequest="38"
+                Padding="8"
+                Clicked="DockerComposeClicked"
+                IsVisible="{Binding DiretorioAtualTemCompose}"
+                Source="docker_compose.png">
+
+                        <ImageButton.CornerRadius>
+                            12
+                        </ImageButton.CornerRadius>
+
+                    </ImageButton>
+
+                </HorizontalStackLayout>
+
+                <ImageButton
+            Grid.Column="1"
+            WidthRequest="38"
+            HeightRequest="38"
+            Clicked="FecharExploradorClicked"
+            Source="close.png"/>
+
+            </Grid>
+
+        </Border>
+        <!-- LOADING -->
+        <Grid
+    Grid.RowSpan="2"
+    ZIndex="999"
+    BackgroundColor="#80000000"
+    IsVisible="{Binding IsLoading}">
+
+            <Grid
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill">
+
+                <Border
+            Padding="24,18"
+            BackgroundColor="#1F2937"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            StrokeThickness="0">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="24"/>
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="12">
+
+                        <ActivityIndicator
+                    WidthRequest="42"
+                    HeightRequest="42"
+                    Color="White"
+                    IsRunning="{Binding IsLoading}"/>
+
+                        <Label
+                    FontSize="16"
+                    HorizontalTextAlignment="Center"
+                    Text="Carregando..."
+                    TextColor="White"/>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+            </Grid>
+
+        </Grid>
+    </Grid>
+
+</ContentPage>

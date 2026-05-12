@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="NecroPanel.ApplicationN/NecroPanel.ApplicationN.csproj" Id="6e13508a-476d-4112-a799-77a346d4be66" />
+  <Project Path="NecroPanel/NecroPanel.csproj">
+    <BuildDependency Project="NecroPanel.ApplicationN/NecroPanel.ApplicationN.csproj" />
+    <Deploy Solution="Debug|*" />
+  </Project>
+</Solution>

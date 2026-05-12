@@ -1,0 +1,300 @@
+﻿<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="NecroPanel.MainPage"
+    BackgroundColor="#111827">
+
+    <Grid RowDefinitions="Auto,*,Auto, Auto">
+
+        <VerticalStackLayout
+    Grid.Row="0"
+    Padding="20,50,20,20"
+    Spacing="18">
+
+            <!-- Métricas -->
+            <Grid
+    ColumnDefinitions="*,*,*"
+    ColumnSpacing="12">
+
+                <!-- CPU -->
+                <Border
+        BackgroundColor="#1E293B"
+        Padding="12"
+        StrokeThickness="0">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16"/>
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                Text="CPU"
+                FontSize="11"
+                TextColor="#94A3B8"/>
+
+                        <Label
+                x:Name="lblCPU"
+                Text="0%"
+                FontSize="18"
+                FontAttributes="Bold"
+                TextColor="White"/>
+
+                        <ProgressBar
+                x:Name="pbCPU"
+                Progress="0"
+                HeightRequest="6"/>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+                <!-- RAM -->
+                <Border
+        Grid.Column="1"
+        BackgroundColor="#1E293B"
+        Padding="12"
+        StrokeThickness="0">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16"/>
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                Text="RAM"
+                FontSize="11"
+                TextColor="#94A3B8"/>
+
+                        <Label
+                x:Name="lblRAM"
+                Text="0%"
+                FontSize="18"
+                FontAttributes="Bold"
+                TextColor="White"/>
+
+                        <ProgressBar
+                x:Name="pbRAM"
+                Progress="0"
+                HeightRequest="6"/>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+                <!-- TEMP -->
+                <Border
+        Grid.Column="2"
+        BackgroundColor="#1E293B"
+        Padding="12"
+        StrokeThickness="0">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="16"/>
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                Text="TEMP"
+                FontSize="11"
+                TextColor="#94A3B8"/>
+
+                        <Label
+                x:Name="lblTEMP"
+                Text="0°C"
+                FontSize="18"
+                FontAttributes="Bold"
+                TextColor="White"/>
+
+                        <ProgressBar
+                x:Name="pbTEMP"
+                Progress="0"
+                HeightRequest="6"/>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+            </Grid>
+
+        </VerticalStackLayout>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout
+                Spacing="25">
+
+                <VerticalStackLayout.Padding>
+                    <OnPlatform x:TypeArguments="Thickness">
+                        <On Platform="WinUI" Value="0"/>
+                        <On Platform="Android" Value="20,0,20,20"/>
+                    </OnPlatform>
+                </VerticalStackLayout.Padding>
+
+                <CollectionView
+                    ItemsSource="{Binding Servicos}"
+                    SelectionMode="None">
+
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout
+            Orientation="Vertical"
+            Span="4"
+            HorizontalItemSpacing="10"
+            VerticalItemSpacing="20"/>
+                    </CollectionView.ItemsLayout>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+
+                            <VerticalStackLayout
+                WidthRequest="85"
+                Spacing="6"
+                HorizontalOptions="Center">
+
+                                <Grid
+                                    WidthRequest="75"
+                                    HeightRequest="75">
+
+                                    <!-- Spinner Loading -->
+                                    <ActivityIndicator
+                                        IsVisible="{Binding IsLoading}"
+                                        IsRunning="{Binding IsLoading}"
+                                        WidthRequest="24"
+                                        HeightRequest="24"
+                                        Color="Gold"
+                                        HorizontalOptions="End"
+                                        VerticalOptions="Start"
+                                        Margin="0,0,0,0"
+                                        ZIndex="9"/>
+
+                                    <!-- Botão -->
+                                    <Border
+                                        StrokeThickness="0"
+                                        BackgroundColor="Transparent">
+
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="24"/>
+                                        </Border.StrokeShape>
+
+                                        <ImageButton
+                                            Source="{Binding Icone}"
+                                            BackgroundColor="Transparent"
+                                            Clicked="OnServicoClicked"
+                                            CommandParameter="{Binding .}"/>
+                                    </Border>
+
+                                    <!-- Semáforo -->
+                                    <Border
+                                        IsVisible="{Binding IsService}"
+                                        WidthRequest="16"
+                                        HeightRequest="16"
+                                        BackgroundColor="{Binding StatusColor}"
+                                        StrokeThickness="2"
+                                        Stroke="White"
+                                        HorizontalOptions="End"
+                                        VerticalOptions="Start"
+                                        Margin="0,4,4,0"
+                                        ZIndex="10">
+
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="999"/>
+                                        </Border.StrokeShape>
+
+                                    </Border>
+
+                                </Grid>
+
+                                <Label
+                    Text="{Binding Nome}"
+                    FontSize="12"
+                    HorizontalTextAlignment="Center"
+                    HorizontalOptions="Center"
+                    TextColor="White"/>
+
+                            </VerticalStackLayout>
+
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+
+                </CollectionView>
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+        <Border
+            Grid.Row="2"
+            Margin="20"
+            Padding="15"
+            BackgroundColor="#0F172A"
+            Stroke="#334155"
+            StrokeThickness="1">
+
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="20" />
+            </Border.StrokeShape>
+
+            <ScrollView x:Name="outputScroll" HeightRequest="140">
+
+                <Label
+                    x:Name="lblOutput"
+                    Text="Aguardando comandos..."
+                    TextColor="#E2E8F0"
+                    FontFamily="Consolas"
+                    FontSize="13"
+                    LineBreakMode="WordWrap" />
+
+            </ScrollView>
+
+        </Border>
+
+        <Grid
+            Grid.Row="3"
+    ColumnDefinitions="*,Auto"
+    ColumnSpacing="10">
+
+            <!-- Input -->
+            <Border
+        BackgroundColor="#1E293B"
+        StrokeThickness="0"
+        Padding="12,0">
+
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="16"/>
+                </Border.StrokeShape>
+
+                <Entry
+            x:Name="txtCommand"
+            Placeholder="Digite um comando SSH..."
+            PlaceholderColor="#64748B"
+            TextColor="White"
+            BackgroundColor="Transparent"
+            HeightRequest="50"
+            ReturnType="Send"
+            Completed="OnExecutarComandoClicked"/>
+            </Border>
+
+            <!-- Botão -->
+            <Border
+        Grid.Column="1"
+        WidthRequest="52"
+        HeightRequest="52"
+        StrokeThickness="0">
+
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="999"/>
+                </Border.StrokeShape>
+
+                <ImageButton
+            Source="send.png"
+            BackgroundColor="Transparent"
+            Padding="14"
+            Clicked="OnExecutarComandoClicked"/>
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</ContentPage>
