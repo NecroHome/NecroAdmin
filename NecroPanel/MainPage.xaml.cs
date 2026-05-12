@@ -289,7 +289,8 @@ public partial class MainPage : ContentPage
             "echo API=$(docker inspect -f '{{.State.Running}}' necro_api);" +
             "echo DB=$(docker inspect -f '{{.State.Running}}' mariadb_local);" +
             "echo WOW_AUTH=$(systemctl is-active azeroth-auth);" +
-            "echo WOW_WORLD=$(systemctl is-active azeroth-world);";
+            "echo WOW_WORLD=$(systemctl is-active azeroth-world);" +
+            "echo MYSQL=$(systemctl is-active mysql);";
 
         string resultado =
             await _sshService.EnviarMensagemSSH(command);
@@ -325,6 +326,15 @@ public partial class MainPage : ContentPage
                     !linha.EndsWith("inactive")
                         ? StatusServico.Online
                         : StatusServico.Offline);
+            }
+
+            if (linha.StartsWith("MYSQL"))
+            {
+                AtualizarServico(
+                    "mysql",
+                    !linha.EndsWith("inactive")
+                    ? StatusServico.Online
+                    : StatusServico.Offline);
             }
 
             if (linha.StartsWith("QBIT="))
