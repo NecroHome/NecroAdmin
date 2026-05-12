@@ -41,9 +41,21 @@ public partial class MainPage : ContentPage
 
             new()
             {
-                Nome = "World of Warcraft",
+                Nome = "WoW Auth Server",
                 Icone = "wow.png",
-                NomeServico = "wow",
+                NomeServico = "azeroth-auth",
+                MagicPacket = false,
+                Docker = false,
+                Status = StatusServico.Loading,
+                IsService = true,
+                Callback = ToggleWow
+            },
+
+            new()
+            {
+                Nome = "WoW World Server",
+                Icone = "wow.png",
+                NomeServico = "azeroth-world",
                 MagicPacket = false,
                 Docker = false,
                 Status = StatusServico.Loading,
@@ -64,7 +76,7 @@ public partial class MainPage : ContentPage
 
             new()
             {
-                Nome = "QBit",
+                Nome = "QBitTorrent",
                 Icone = "qbittorrent.png",
                 NomeServico = "qbittorrent",
                 Docker = true,
@@ -75,7 +87,7 @@ public partial class MainPage : ContentPage
 
             new()
             {
-                Nome = "Necro",
+                Nome = "NecroFinances",
                 Icone = "necrofinances.png",
                 NomeServico = "necrofinances",
                 Docker = true,
@@ -86,7 +98,7 @@ public partial class MainPage : ContentPage
 
             new()
             {
-                Nome = "Explorador de Arquivos",
+                Nome = "Arquivos",
                 Icone = "folder.png",
                 IsService = false,
                 Status = StatusServico.NotUsed,
@@ -95,7 +107,7 @@ public partial class MainPage : ContentPage
 
             new()
             {
-                Nome = "Docker Manager",
+                Nome = "Docker",
                 Icone = "docker.png",
                 IsService = false,
                 Status = StatusServico.NotUsed,
@@ -144,7 +156,7 @@ public partial class MainPage : ContentPage
         }
         catch
         {
-            // ignore
+            // silent ignore
         }
     }
 
@@ -264,7 +276,9 @@ public partial class MainPage : ContentPage
             "echo QBIT=$(docker inspect -f '{{.State.Running}}' qbittorrent);" +
             "echo ANGULAR=$(docker inspect -f '{{.State.Running}}' angular-app);" +
             "echo API=$(docker inspect -f '{{.State.Running}}' necro_api);" +
-            "echo DB=$(docker inspect -f '{{.State.Running}}' mariadb_local);";
+            "echo DB=$(docker inspect -f '{{.State.Running}}' mariadb_local);" +
+            "echo WOW_AUTH=$(systemctl is-active azeroth-auth);" +
+            "echo WOW_WORLD=$(systemctl is-active azeroth-world);";
 
         string resultado =
             await _sshService.EnviarMensagemSSH(command);
@@ -277,6 +291,22 @@ public partial class MainPage : ContentPage
 
         foreach (var linha in linhas)
         {
+            if (linha.StartsWith("WOW_AUTH"))
+            {
+                AtualizarServico("azeroth-auth",
+                    !linha.EndsWith("inactive")
+                    ? StatusServico.Online
+                    : StatusServico.Offline);
+            }
+
+            if (linha.StartsWith("WOW_WORLD"))
+            {
+                AtualizarServico("azeroth-world",
+                    !linha.EndsWith("inactive")
+                    ? StatusServico.Online
+                    : StatusServico.Offline);
+            }
+
             if (linha.StartsWith("JELLYFIN="))
             {
                 AtualizarServico(
