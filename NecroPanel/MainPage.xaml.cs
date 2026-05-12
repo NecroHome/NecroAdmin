@@ -48,7 +48,7 @@ public partial class MainPage : ContentPage
                 Docker = false,
                 Status = StatusServico.Loading,
                 IsService = true,
-                Callback = ToggleWow
+                Callback = ToggleWowAuth
             },
 
             new()
@@ -60,7 +60,7 @@ public partial class MainPage : ContentPage
                 Docker = false,
                 Status = StatusServico.Loading,
                 IsService = true,
-                Callback = ToggleWow
+                Callback = ToggleWowWorld
             },
 
             new()
@@ -94,6 +94,17 @@ public partial class MainPage : ContentPage
                 Status = StatusServico.Loading,
                 IsService = true,
                 Callback = ToggleNecrofinances
+            },
+
+            new()
+            {
+                Nome = "MySql",
+                Icone = "mysql.png",
+                NomeServico = "mysql",
+                Docker = false,
+                Status = StatusServico.Loading,
+                IsService = true,
+                Callback = ToggleMySql
             },
 
             new()
@@ -459,6 +470,25 @@ public partial class MainPage : ContentPage
                 : "Jellyfin Finalizado!");
     }
 
+    private async Task ToggleMySql()
+    {
+        bool result =
+            await _sshService.AlternarServico(
+                "mysql",
+                false);
+
+        AtualizarServico(
+            "mysql",
+            result
+                ? StatusServico.Online
+                : StatusServico.Offline);
+
+        await Log(
+            result
+                ? "MySql Inicializado!"
+                : "MySql Finalizado!");
+    }
+
     private async Task ToggleQBit()
     {
         bool result =
@@ -478,23 +508,42 @@ public partial class MainPage : ContentPage
                 : "QBit Finalizado!");
     }
 
-    private async Task ToggleWow()
+    private async Task ToggleWowAuth()
     {
         bool result =
             await _sshService.AlternarServico(
-                "wow",
+                "azeroth-auth",
                 false);
 
         AtualizarServico(
-            "wow",
+            "azeroth-auth",
             result
                 ? StatusServico.Online
                 : StatusServico.Offline);
 
         await Log(
             result
-                ? "WoW Inicializado!"
-                : "WoW Finalizado!");
+                ? "WoW Auth Inicializado!"
+                : "WoW Auth Finalizado!");
+    }
+
+    private async Task ToggleWowWorld()
+    {
+        bool result =
+            await _sshService.AlternarServico(
+                "azeroth-world",
+                false);
+
+        AtualizarServico(
+            "azeroth-world",
+            result
+                ? StatusServico.Online
+                : StatusServico.Offline);
+
+        await Log(
+            result
+                ? "WoW World Inicializado!"
+                : "WoW World Finalizado!");
     }
 
     private async Task ToggleNecrofinances()
