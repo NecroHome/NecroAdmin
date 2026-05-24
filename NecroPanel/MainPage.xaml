@@ -4,23 +4,61 @@
     x:Class="NecroPanel.MainPage"
     BackgroundColor="#111827">
 
-    <Grid RowDefinitions="Auto,*,Auto, Auto">
+    <Grid RowDefinitions="Auto, Auto, *">
 
-        <VerticalStackLayout
-    Grid.Row="0"
-    Padding="20,50,20,20"
-    Spacing="18">
+        <Grid
+            Padding="16,8"
+            ColumnDefinitions="Auto,*,Auto"
+            VerticalOptions="Center">
+
+            <!-- Semáforo -->
+            <Border
+                x:Name="semaforoServidor"
+                WidthRequest="14"
+                HeightRequest="14"
+                BackgroundColor="Orange"
+                StrokeThickness="0"
+                VerticalOptions="Center">
+
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="999"/>
+                </Border.StrokeShape>
+            </Border>
+
+            <!-- Texto status -->
+            <Label
+                x:Name="lblStatusServidor"
+                Grid.Column="1"
+                Margin="12,0,0,0"
+                Text="------------------"
+                FontSize="16"
+                FontAttributes="Bold"
+                VerticalOptions="Center"
+                TextColor="White"/>
+
+            <!-- Botão power -->
+            <ImageButton
+                x:Name="btnPowerServidor"
+                Grid.Column="2"
+                Source="shutdown.png"
+                WidthRequest="42"
+                HeightRequest="42"
+                BackgroundColor="Transparent"
+                Clicked="ToggleServer"/>
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="1" Padding="20,0,20,20" Spacing="18">
 
             <!-- Métricas -->
             <Grid
-    ColumnDefinitions="*,*,*"
-    ColumnSpacing="12">
+                ColumnDefinitions="*,*,*"
+                ColumnSpacing="12">
 
                 <!-- CPU -->
                 <Border
-        BackgroundColor="#1E293B"
-        Padding="12"
-        StrokeThickness="0">
+                    BackgroundColor="#1E293B"
+                    Padding="12"
+                    StrokeThickness="0">
 
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="16"/>
@@ -121,7 +159,7 @@
 
         </VerticalStackLayout>
 
-        <ScrollView Grid.Row="1">
+        <ScrollView Grid.Row="2">
             <VerticalStackLayout
                 Spacing="25">
 
@@ -148,9 +186,9 @@
                         <DataTemplate>
 
                             <VerticalStackLayout
-                WidthRequest="85"
-                Spacing="6"
-                HorizontalOptions="Center">
+                                WidthRequest="85"
+                                Spacing="6"
+                                HorizontalOptions="Center">
 
                                 <Grid
                                     WidthRequest="75"
@@ -222,78 +260,6 @@
             </VerticalStackLayout>
 
         </ScrollView>
-
-        <Border
-            Grid.Row="2"
-            Margin="20"
-            Padding="15"
-            BackgroundColor="#0F172A"
-            Stroke="#334155"
-            StrokeThickness="1">
-
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="20" />
-            </Border.StrokeShape>
-
-            <ScrollView x:Name="outputScroll" HeightRequest="140">
-
-                <Label
-                    x:Name="lblOutput"
-                    Text="Aguardando comandos..."
-                    TextColor="#E2E8F0"
-                    FontFamily="Consolas"
-                    FontSize="13"
-                    LineBreakMode="WordWrap" />
-
-            </ScrollView>
-
-        </Border>
-
-        <Grid
-            Grid.Row="3"
-    ColumnDefinitions="*,Auto"
-    ColumnSpacing="10">
-
-            <!-- Input -->
-            <Border
-        BackgroundColor="#1E293B"
-        StrokeThickness="0"
-        Padding="12,0">
-
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="16"/>
-                </Border.StrokeShape>
-
-                <Entry
-            x:Name="txtCommand"
-            Placeholder="Digite um comando SSH..."
-            PlaceholderColor="#64748B"
-            TextColor="White"
-            BackgroundColor="Transparent"
-            HeightRequest="50"
-            ReturnType="Send"
-            Completed="OnExecutarComandoClicked"/>
-            </Border>
-
-            <!-- Botão -->
-            <Border
-        Grid.Column="1"
-        WidthRequest="52"
-        HeightRequest="52"
-        StrokeThickness="0">
-
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="999"/>
-                </Border.StrokeShape>
-
-                <ImageButton
-            Source="send.png"
-            BackgroundColor="Transparent"
-            Padding="14"
-            Clicked="OnExecutarComandoClicked"/>
-            </Border>
-
-        </Grid>
 
     </Grid>
 

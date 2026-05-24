@@ -1,4 +1,5 @@
-﻿using NecroPanel.ApplicationN.Interfaces;
+﻿using Android.App;
+using NecroPanel.ApplicationN.Interfaces;
 using NecroPanel.ApplicationN.Models;
 using NecroPanel.Pages;
 using System.Collections.ObjectModel;
@@ -29,26 +30,26 @@ public partial class MainPage : ContentPage
         {
             new()
             {
-                Nome = "Servidor",
-                Icone = "shutdown.png",
-                NomeServico = "server",
-                MagicPacket = true,
-                Docker = false,
-                Status = StatusServico.Loading,
-                IsService = true,
-                Callback = ToggleServidor
-            },
-
-            new()
-            {
-                Nome = "World of Warcraft",
+                Nome = "WoW Auth Server",
                 Icone = "wow.png",
-                NomeServico = "wow",
+                NomeServico = "azeroth-auth",
                 MagicPacket = false,
                 Docker = false,
                 Status = StatusServico.Loading,
                 IsService = true,
-                Callback = ToggleWow
+                Callback = () =>ToggleService("azeroth-auth")
+            },
+
+            new()
+            {
+                Nome = "WoW World Server",
+                Icone = "wow.png",
+                NomeServico = "azeroth-world",
+                MagicPacket = false,
+                Docker = false,
+                Status = StatusServico.Loading,
+                IsService = true,
+                Callback = () => ToggleService("azeroth-world")
             },
 
             new()
@@ -59,34 +60,23 @@ public partial class MainPage : ContentPage
                 Docker = false,
                 Status = StatusServico.Loading,
                 IsService = true,
-                Callback = ToggleJellyfin
+                Callback = () => ToggleService("jellyfin")
             },
 
             new()
             {
-                Nome = "QBit",
-                Icone = "qbittorrent.png",
-                NomeServico = "qbittorrent",
-                Docker = true,
+                Nome = "MySql",
+                Icone = "mysql.png",
+                NomeServico = "mysql",
+                Docker = false,
                 Status = StatusServico.Loading,
                 IsService = true,
-                Callback = ToggleQBit
+                Callback = () => ToggleService("mysql")
             },
 
             new()
             {
-                Nome = "Necro",
-                Icone = "necrofinances.png",
-                NomeServico = "necrofinances",
-                Docker = true,
-                Status = StatusServico.Loading,
-                IsService = true,
-                Callback = ToggleNecrofinances
-            },
-
-            new()
-            {
-                Nome = "Explorador de Arquivos",
+                Nome = "Arquivos",
                 Icone = "folder.png",
                 IsService = false,
                 Status = StatusServico.NotUsed,
@@ -95,7 +85,7 @@ public partial class MainPage : ContentPage
 
             new()
             {
-                Nome = "Docker Manager",
+                Nome = "Docker",
                 Icone = "docker.png",
                 IsService = false,
                 Status = StatusServico.NotUsed,
@@ -144,7 +134,7 @@ public partial class MainPage : ContentPage
         }
         catch
         {
-            // ignore
+            // silent ignore
         }
     }
 
@@ -155,22 +145,30 @@ public partial class MainPage : ContentPage
             bool servidorOnline =
                 await _sshService.VerificarSSH();
 
-            AtualizarServico(
-                "server",
-                servidorOnline
-                    ? StatusServico.Online
-                    : StatusServico.Offline);
+            if (servidorOnline)
+            {
+                semaforoServidor.Background = Colors.LimeGreen;
+                lblStatusServidor.Text = "ONLINE";
+                btnPowerServidor.Source = "shutdown.png";
+            } 
+            else
+            {
+                semaforoServidor.Background = Colors.Red;
+                lblStatusServidor.Text = "OFFLINE";
+                btnPowerServidor.Source = "poweron.png";
+                lblCPU.Text = "0%";
+                await pbCPU.ProgressTo(0, 250, Easing.CubicOut);
+                lblRAM.Text = "0%";
+                await pbRAM.ProgressTo(0, 250, Easing.CubicOut);
+                lblTEMP.Text = "0ºC";
+                await pbTEMP.ProgressTo(0, 250, Easing.CubicOut);
+            }
 
             if (!servidorOnline)
             {
-                await Log(
-                    "Servidor Offline, próximo check em 20 segundos...");
-
                 foreach (Servico s in Servicos)
                 {
-                    AtualizarServico(
-                        s.NomeServico,
-                        StatusServico.Offline);
+                    AtualizarServico(s.NomeServico,StatusServico.Offline);
                 }
 
                 return;
@@ -182,7 +180,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception ex)
         {
-            await Log(ex.Message);
+            
         }
     }
 
@@ -261,70 +259,44 @@ public partial class MainPage : ContentPage
     {
         string command =
             "echo JELLYFIN=$(systemctl is-active jellyfin);" +
-            "echo QBIT=$(docker inspect -f '{{.State.Running}}' qbittorrent);" +
-            "echo ANGULAR=$(docker inspect -f '{{.State.Running}}' angular-app);" +
-            "echo API=$(docker inspect -f '{{.State.Running}}' necro_api);" +
-            "echo DB=$(docker inspect -f '{{.State.Running}}' mariadb_local);";
+            "echo WOW_AUTH=$(systemctl is-active azeroth-auth);" +
+            "echo WOW_WORLD=$(systemctl is-active azeroth-world);" +
+            "echo MYSQL=$(systemctl is-active mysql);";
 
         string resultado =
             await _sshService.EnviarMensagemSSH(command);
 
         var linhas = resultado.Split('\n');
 
-        bool frontend = false;
-        bool api = false;
-        bool db = false;
-
         foreach (var linha in linhas)
         {
+            if (linha.StartsWith("WOW_AUTH"))
+            {
+                AtualizarServico("azeroth-auth", !linha.EndsWith("inactive") ? StatusServico.Online : StatusServico.Offline);
+            }
+
+            if (linha.StartsWith("WOW_WORLD"))
+            {
+                AtualizarServico("azeroth-world", !linha.EndsWith("inactive") ? StatusServico.Online : StatusServico.Offline);
+            }
+
             if (linha.StartsWith("JELLYFIN="))
             {
-                AtualizarServico(
-                    "jellyfin",
-                    !linha.EndsWith("inactive")
-                        ? StatusServico.Online
-                        : StatusServico.Offline);
+                AtualizarServico("jellyfin", !linha.EndsWith("inactive") ? StatusServico.Online : StatusServico.Offline);
             }
 
-            if (linha.StartsWith("QBIT="))
+            if (linha.StartsWith("MYSQL"))
             {
-                AtualizarServico(
-                    "qbittorrent",
-                    linha.Contains("true")
-                        ? StatusServico.Online
-                        : StatusServico.Offline);
-            }
-
-            if (linha.StartsWith("ANGULAR="))
-            {
-                frontend = linha.Contains("true");
-            }
-
-            if (linha.StartsWith("API="))
-            {
-                api = linha.Contains("true");
-            }
-
-            if (linha.StartsWith("DB="))
-            {
-                db = linha.Contains("true");
+                AtualizarServico("mysql", !linha.EndsWith("inactive") ? StatusServico.Online : StatusServico.Offline);
             }
         }
-
-        AtualizarServico(
-            "necrofinances",
-            frontend && api && db
-                ? StatusServico.Online
-                : StatusServico.Offline);
     }
 
     private void AtualizarServico(
         string nomeServico,
         StatusServico status)
     {
-        var servico =
-            Servicos.FirstOrDefault(
-                x => x.NomeServico == nomeServico);
+        var servico = Servicos.FirstOrDefault(x => x.NomeServico == nomeServico);
 
         if (servico == null)
         {
@@ -334,9 +306,30 @@ public partial class MainPage : ContentPage
         servico.Status = status;
     }
 
-    private async void OnServicoClicked(
-    object sender,
-    EventArgs e)
+    private async void ToggleServer(object sender, EventArgs e)
+    {
+        if (lblStatusServidor.Text == "ONLINE")
+        {
+            bool confirmar = await DisplayAlertAsync("Desligar Servidor", "Realmente deseja desligar o servidor?", "Desligar Servidor", "Cancelar");
+            if (!confirmar)
+            {
+                return;
+            }
+
+            await _sshService.EnviarMensagemSSH("sudo shutdown now");
+            await DisplayAlertAsync("Shutdown", "Comando desligar enviado ao servidor.", "OK");
+        }
+        else
+        {
+            await _wakeOnLanService.EnviarMagicPacket();
+            await DisplayAlertAsync("Poweron", "Pacote Mágico enviado, aguarde a inicialização do servidor.", "OK");
+
+            semaforoServidor.BackgroundColor = Colors.Yellow;
+            lblStatusServidor.Text = "INICIANDO";
+        }
+    }
+
+    private async void OnServicoClicked(object sender, EventArgs e)
     {
         if (sender is not ImageButton button)
         {
@@ -360,24 +353,16 @@ public partial class MainPage : ContentPage
                 servico.Status = StatusServico.Loading;
             }
 
-            Task actionTask =
-                servico.Callback();
+            Task actionTask = servico.Callback();
 
-            Task timeoutTask =
-                Task.Delay(TimeSpan.FromSeconds(10));
+            Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(10));
 
-            Task completed =
-                await Task.WhenAny(
-                    actionTask,
-                    timeoutTask);
+            Task completed = await Task.WhenAny(actionTask, timeoutTask);
 
             if (completed == timeoutTask)
             {
                 servico.Status = StatusServico.Error;
-
-                await Log(
-                    $"{servico.Nome} timeout.");
-
+                await DisplayAlertAsync("Erro", "O Serviço não foi inicializado dentro do tempo esperado.", "OK");
                 return;
             }
 
@@ -387,162 +372,29 @@ public partial class MainPage : ContentPage
         {
             servico.Status = StatusServico.Error;
 
-            await Log(ex.Message);
+            await DisplayAlertAsync("Erro", $"Ocorreu um erro ao executar a ação: {ex.Message}", "OK");
         }
     }
 
-    private async Task ToggleServidor()
+    private async Task ToggleService(string nomeServico)
     {
-        var server =
-            Servicos.First(
-                x => x.NomeServico == "server");
-
-        if (server.Status == StatusServico.Online)
+        string result = await _sshService.EnviarMensagemSSH("systemctl is-active " + nomeServico);
+        if (result == "active")
         {
-            await Log(
-                await _sshService.EnviarMensagemSSH(
-                    "sudo shutdown now"));
-        }
-        else
-        {
-            await Log(
-                await _wakeOnLanService.EnviarMagicPacket());
-        }
-    }
-
-    private async Task ToggleJellyfin()
-    {
-        bool result =
-            await _sshService.AlternarServico(
-                "jellyfin",
-                false);
-
-        AtualizarServico(
-            "jellyfin",
-            result
-                ? StatusServico.Online
-                : StatusServico.Offline);
-
-        await Log(
-            result
-                ? "Jellyfin Inicializado!"
-                : "Jellyfin Finalizado!");
-    }
-
-    private async Task ToggleQBit()
-    {
-        bool result =
-            await _sshService.AlternarServico(
-                "qbittorrent",
-                true);
-
-        AtualizarServico(
-            "qbittorrent",
-            result
-                ? StatusServico.Online
-                : StatusServico.Offline);
-
-        await Log(
-            result
-                ? "QBit Inicializado!"
-                : "QBit Finalizado!");
-    }
-
-    private async Task ToggleWow()
-    {
-        bool result =
-            await _sshService.AlternarServico(
-                "wow",
-                false);
-
-        AtualizarServico(
-            "wow",
-            result
-                ? StatusServico.Online
-                : StatusServico.Offline);
-
-        await Log(
-            result
-                ? "WoW Inicializado!"
-                : "WoW Finalizado!");
-    }
-
-    private async Task ToggleNecrofinances()
-    {
-        bool result1 =
-            await _sshService.AlternarServico(
-                "angular-app",
-                true);
-
-        bool result2 =
-            await _sshService.AlternarServico(
-                "necro_api",
-                true);
-
-        bool result3 =
-            await _sshService.AlternarServico(
-                "mariadb_local",
-                true);
-
-        bool online =
-            result1 &&
-            result2 &&
-            result3;
-
-        AtualizarServico(
-            "necrofinances",
-            online
-                ? StatusServico.Online
-                : StatusServico.Offline);
-
-        await Log(
-            online
-                ? "NecroFinances Inicializado!"
-                : "NecroFinances Finalizado!");
-    }
-
-    private async void OnExecutarComandoClicked(
-    object sender,
-    EventArgs e)
-    {
-        try
-        {
-            string command =
-                txtCommand.Text?.Trim() ?? "";
-
-            if (string.IsNullOrWhiteSpace(command))
+            bool confirmar = await DisplayAlertAsync($"Finalizar {nomeServico}", $"Realmente deseja parar o serviço: {nomeServico}?", "Parar Serviço", "Cancelar");
+            if (!confirmar)
             {
                 return;
             }
 
-            await Log($"> {command}");
-
-            string result =
-                await _sshService.EnviarMensagemSSH(command);
-
-            await Log(result);
-
-            txtCommand.Text = "";
+            await _sshService.EnviarMensagemSSH("sudo systemctl stop " + nomeServico);
+            await DisplayAlertAsync("Serviço Parado", $"{nomeServico} foi parado com sucesso.", "OK");
         }
-        catch (Exception ex)
+        else
         {
-            await Log(ex.Message);
+            await _sshService.EnviarMensagemSSH("sudo systemctl start " + nomeServico);
+            await DisplayAlertAsync("Serviço Iniciado", $"{nomeServico} foi iniciado com sucesso.", "OK");
         }
-    }
-
-    private async Task Log(string message)
-    {
-        lblOutput.Text +=
-            $"\n[{DateTime.Now:HH:mm:ss}] {message}";
-
-        await MainThread.InvokeOnMainThreadAsync(
-            async () =>
-            {
-                await outputScroll.ScrollToAsync(
-                    lblOutput,
-                    ScrollToPosition.End,
-                    true);
-            });
     }
 
     private async Task FileExplorer()
