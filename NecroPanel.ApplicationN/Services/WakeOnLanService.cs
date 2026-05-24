@@ -44,9 +44,10 @@ namespace NecroPanel.ApplicationN.Services
                 using UdpClient client = new UdpClient();
                 client.EnableBroadcast = true;
 
-                string broadcastIp = Preferences.Get("BROADCAST_IP", "");
-
-                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse(broadcastIp), 9));
+                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse("192.168.70.255"), 9));
+                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 9));
+                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse("192.168.70.255"), 7));
+                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 7));
                 return "Pacote Mágico enviado.\nAguarde a inicialização do servidor.";
             }
             catch (Exception ex)
