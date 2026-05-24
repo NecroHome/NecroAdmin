@@ -19,6 +19,9 @@ namespace NecroPanel.ApplicationN.Services
                     .Replace("-", "")
                     .Replace(",", "");
 
+                string broadcastIP_01 = Preferences.Get("BROADCAST_IP_01", "");
+                string broadcastIP_02 = Preferences.Get("BROADCAST_IP_02", "");
+
                 if (macAddress.Length != 12)
                 {
                     throw new Exception("Mac Address Inválido");
@@ -44,10 +47,10 @@ namespace NecroPanel.ApplicationN.Services
                 using UdpClient client = new UdpClient();
                 client.EnableBroadcast = true;
 
-                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse("192.168.70.255"), 9));
-                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 9));
-                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse("192.168.70.255"), 7));
-                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 7));
+                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse(broadcastIP_01), 9));
+                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse(broadcastIP_02), 9));
+                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse(broadcastIP_01), 7));
+                await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Parse(broadcastIP_02), 7));
                 return "Pacote Mágico enviado.\nAguarde a inicialização do servidor.";
             }
             catch (Exception ex)

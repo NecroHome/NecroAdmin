@@ -13,7 +13,8 @@ namespace NecroPanel.Settings
             Preferences.Set("SSH_USER", "");
             Preferences.Set("SSH_PASSWORD", "");
             Preferences.Set("MAC_ADDRESS", "");
-            Preferences.Set("BROADCAST_IP", "");
+            Preferences.Set("BROADCAST_IP_01", "");
+            Preferences.Set("BROADCAST_IP_02", "");
         }
     }
 }
