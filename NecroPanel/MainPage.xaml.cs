@@ -1,5 +1,4 @@
-﻿using Android.App;
-using NecroPanel.ApplicationN.Interfaces;
+﻿using NecroPanel.ApplicationN.Interfaces;
 using NecroPanel.ApplicationN.Models;
 using NecroPanel.Pages;
 using System.Collections.ObjectModel;
@@ -27,53 +26,7 @@ public partial class MainPage : ContentPage
         _wakeOnLanService = wakeOnLanService;
 
         Servicos = new ObservableCollection<Servico>
-        {
-            new()
-            {
-                Nome = "WoW Auth Server",
-                Icone = "wow.png",
-                NomeServico = "azeroth-auth",
-                MagicPacket = false,
-                Docker = false,
-                Status = StatusServico.Loading,
-                IsService = true,
-                Callback = () =>ToggleService("azeroth-auth")
-            },
-
-            new()
-            {
-                Nome = "WoW World Server",
-                Icone = "wow.png",
-                NomeServico = "azeroth-world",
-                MagicPacket = false,
-                Docker = false,
-                Status = StatusServico.Loading,
-                IsService = true,
-                Callback = () => ToggleService("azeroth-world")
-            },
-
-            new()
-            {
-                Nome = "Jellyfin",
-                Icone = "jellyfin.png",
-                NomeServico = "jellyfin",
-                Docker = false,
-                Status = StatusServico.Loading,
-                IsService = true,
-                Callback = () => ToggleService("jellyfin")
-            },
-
-            new()
-            {
-                Nome = "MySql",
-                Icone = "mysql.png",
-                NomeServico = "mysql",
-                Docker = false,
-                Status = StatusServico.Loading,
-                IsService = true,
-                Callback = () => ToggleService("mysql")
-            },
-
+        { 
             new()
             {
                 Nome = "Arquivos",
@@ -175,8 +128,6 @@ public partial class MainPage : ContentPage
             }
 
             await AtualizarMetricasServidor();
-
-            await AtualizarStatusServicos();
         }
         catch (Exception ex)
         {
@@ -255,43 +206,6 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private async Task AtualizarStatusServicos()
-    {
-        string command =
-            "echo JELLYFIN=$(systemctl is-active jellyfin);" +
-            "echo WOW_AUTH=$(systemctl is-active azeroth-auth);" +
-            "echo WOW_WORLD=$(systemctl is-active azeroth-world);" +
-            "echo MYSQL=$(systemctl is-active mysql);";
-
-        string resultado =
-            await _sshService.EnviarMensagemSSH(command);
-
-        var linhas = resultado.Split('\n');
-
-        foreach (var linha in linhas)
-        {
-            if (linha.StartsWith("WOW_AUTH"))
-            {
-                AtualizarServico("azeroth-auth", !linha.EndsWith("inactive") ? StatusServico.Online : StatusServico.Offline);
-            }
-
-            if (linha.StartsWith("WOW_WORLD"))
-            {
-                AtualizarServico("azeroth-world", !linha.EndsWith("inactive") ? StatusServico.Online : StatusServico.Offline);
-            }
-
-            if (linha.StartsWith("JELLYFIN="))
-            {
-                AtualizarServico("jellyfin", !linha.EndsWith("inactive") ? StatusServico.Online : StatusServico.Offline);
-            }
-
-            if (linha.StartsWith("MYSQL"))
-            {
-                AtualizarServico("mysql", !linha.EndsWith("inactive") ? StatusServico.Online : StatusServico.Offline);
-            }
-        }
-    }
-
     private void AtualizarServico(
         string nomeServico,
         StatusServico status)
@@ -316,7 +230,7 @@ public partial class MainPage : ContentPage
                 return;
             }
 
-            await _sshService.EnviarMensagemSSH("sudo shutdown now");
+            await _sshService.EnviarMensagemSSH("sudo -n /usr/bin/systemctl poweroff");
             await DisplayAlertAsync("Shutdown", "Comando desligar enviado ao servidor.", "OK");
         }
         else
@@ -373,27 +287,6 @@ public partial class MainPage : ContentPage
             servico.Status = StatusServico.Error;
 
             await DisplayAlertAsync("Erro", $"Ocorreu um erro ao executar a ação: {ex.Message}", "OK");
-        }
-    }
-
-    private async Task ToggleService(string nomeServico)
-    {
-        string result = await _sshService.EnviarMensagemSSH("systemctl is-active " + nomeServico);
-        if (result == "active")
-        {
-            bool confirmar = await DisplayAlertAsync($"Finalizar {nomeServico}", $"Realmente deseja parar o serviço: {nomeServico}?", "Parar Serviço", "Cancelar");
-            if (!confirmar)
-            {
-                return;
-            }
-
-            await _sshService.EnviarMensagemSSH("sudo systemctl stop " + nomeServico);
-            await DisplayAlertAsync("Serviço Parado", $"{nomeServico} foi parado com sucesso.", "OK");
-        }
-        else
-        {
-            await _sshService.EnviarMensagemSSH("sudo systemctl start " + nomeServico);
-            await DisplayAlertAsync("Serviço Iniciado", $"{nomeServico} foi iniciado com sucesso.", "OK");
         }
     }
 
