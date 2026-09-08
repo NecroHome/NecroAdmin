@@ -222,24 +222,33 @@ public partial class MainPage : ContentPage
 
     private async void ToggleServer(object sender, EventArgs e)
     {
-        if (lblStatusServidor.Text == "ONLINE")
+        try
         {
-            bool confirmar = await DisplayAlertAsync("Desligar Servidor", "Realmente deseja desligar o servidor?", "Desligar Servidor", "Cancelar");
-            if (!confirmar)
+            if (lblStatusServidor.Text == "ONLINE")
             {
-                return;
+                bool confirmar = await DisplayAlertAsync("Desligar Servidor", "Realmente deseja desligar o servidor?", "Desligar Servidor", "Cancelar");
+                if (!confirmar)
+                {
+                    return;
+                }
+
+                await _sshService.EnviarMensagemSSH("sudo -n /usr/bin/systemctl poweroff");
+                await DisplayAlertAsync("Shutdown", "Comando desligar enviado ao servidor.", "OK");
             }
+            else
+            {
+                await _wakeOnLanService.EnviarMagicPacket();
+                await DisplayAlertAsync("Poweron", "Pacote Mágico enviado, aguarde a inicialização do servidor.", "OK");
 
-            await _sshService.EnviarMensagemSSH("sudo -n /usr/bin/systemctl poweroff");
-            await DisplayAlertAsync("Shutdown", "Comando desligar enviado ao servidor.", "OK");
+                semaforoServidor.BackgroundColor = Colors.Yellow;
+                lblStatusServidor.Text = "INICIANDO";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await _wakeOnLanService.EnviarMagicPacket();
-            await DisplayAlertAsync("Poweron", "Pacote Mágico enviado, aguarde a inicialização do servidor.", "OK");
-
-            semaforoServidor.BackgroundColor = Colors.Yellow;
-            lblStatusServidor.Text = "INICIANDO";
+            semaforoServidor.BackgroundColor = Colors.Orange;
+            lblStatusServidor.Text = "DESCONHECIDO";
+            await DisplayAlertAsync("Erro", ex.Message, "OK");
         }
     }
 
